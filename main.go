@@ -19,6 +19,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type Form struct {
+	Mode    string `uri:"mode"`
+	Country string `uri:"country"`
+}
+
 type Base struct {
 	Hello string `json:"size"`
 }
@@ -27,7 +32,8 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.POST("/upload", saveFileHandler)
-	router.GET("/stats", getStats)
+	router.GET("/stat/:mode/:country", getStats)
+	// router.GET("/stats:id", getStats)
 	router.Static("/image", "./image")
 	router.Run(":8080")
 }
@@ -88,9 +94,32 @@ func saveFileHandler(c *gin.Context) {
 		"status": 201, "message": "Your file has been successfully uploaded.", "data": data, "final": base.Hello})
 }
 
+// func getStats(c *gin.Context) {
+// 	newFileName := uuid.New().String() + ".jpg"
+// 	req, _ := http.Get("http://localhost:5000/ai")
+// 	base := Base{}
+// 	_ = json.NewDecoder(req.Body).Decode(&base)
+// 	// log.Println(base.Hello)
+// 	ddd, _ := base64.StdEncoding.DecodeString(base.Hello[2:])
+// 	_ = ioutil.WriteFile("./image/"+newFileName, ddd, 0666)
+
+// 	imageUrl := fmt.Sprintf("http://localhost:8080/image/%s", newFileName)
+// 	data := map[string]interface{}{
+// 		"imageUrl": imageUrl,
+// 	}
+// 	c.JSON(200, gin.H{
+// 		"status": 201, "message": "Your file has been successfully uploaded.", "data": data})
+// }
+
 func getStats(c *gin.Context) {
+	var msg Form
+	if err := c.ShouldBindUri(&msg); err != nil {
+		c.JSON(400, gin.H{"msg": err.Error()})
+		return
+	}
 	newFileName := uuid.New().String() + ".jpg"
-	req, _ := http.Get("http://localhost:5000/ai")
+	quer := fmt.Sprintf("http://localhost:5000/ai?mode=%s&country=%s", msg.Mode, msg.Country)
+	req, _ := http.Get(quer)
 	base := Base{}
 	_ = json.NewDecoder(req.Body).Decode(&base)
 	// log.Println(base.Hello)
@@ -101,6 +130,7 @@ func getStats(c *gin.Context) {
 	data := map[string]interface{}{
 		"imageUrl": imageUrl,
 	}
+
 	c.JSON(200, gin.H{
-		"status": 201, "message": "Your file has been successfully uploaded.", "data": data})
+		"status": 201, "message": "Your file has been successfully uploaded.", "message1": data, "country": msg.Country})
 }
