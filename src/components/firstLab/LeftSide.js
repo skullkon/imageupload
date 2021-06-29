@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
 import "./index.css"
-import { Box, ChakraProvider, Container, Button, Heading, VStack, Image, HStack, Tag } from "@chakra-ui/react";
+import { Box, ChakraProvider, Container, Button, Heading, VStack, Image, HStack, Tag, Radio, FormControl, RadioGroup, FormHelperText, FormLabel } from "@chakra-ui/react";
 // import Axios from "axios";
 // import Upload from "../Upload/Upload";
 import axios from 'axios';
 
-const getUrl = 'http://localhost:8080/stats'
+const getUrl = 'http://localhost:8080/stat'
 
 
 const LeftSide = () => {
     const [uploadedImage, setuploadedImage] = useState(null)
     const [imageUrl, setimageUrl] = useState(null)
+    const [country, setCountry] = useState("Russian Federation")
+    const [mode, setMode] = useState("population")
     return (
         <div>
             <ChakraProvider>
@@ -25,18 +27,35 @@ const LeftSide = () => {
                     <Container maxWidth="container.l">
                         <VStack>
                             <Heading>График данных</Heading>
+                            <select onChange={e => {
+                                setMode(e.target.value)
+                            }} >
+                                <option>
+                                    population
+                                    </option>
+                                <option>
+                                    suicides_no
+                                    </option>
+                            </select>
+                            <input type="text" placeholder="Введите страну на английском" onChange={(e) => { setCountry(e.target.value); console.log(country) }} />
+
                             <Button
                                 colorScheme="blue"
                                 size="lg"
-                                onClick={() =>
-                                    axios.get(getUrl).then((resp) => {
-                                        setimageUrl(resp.data.data.imageUrl)
+                                onClick={() => {
+                                    const newString = `${getUrl}/${mode}/${country}`
+                                    axios.get(newString).then((resp) => {
+                                        setimageUrl(resp.data.message1.imageUrl)
                                         setuploadedImage(1)
+                                        console.log(resp.data.message1.imageUrl)
                                     })
+                                }
+
                                 }
                             >
                                 Загрузить график
                              </Button>
+
                             {uploadedImage && (
                                 <VStack my="4">
                                     <Image
@@ -58,7 +77,7 @@ const LeftSide = () => {
                 </Box>
 
             </ChakraProvider>
-        </div>
+        </div >
     )
 }
 
