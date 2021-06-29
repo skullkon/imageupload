@@ -27,7 +27,10 @@ def hello():
 
 @app.route('/ai', methods=['GET'])
 def ai():
-    img = AI()
+    mode = request.args.get('mode')
+    country = request.args.get('country')
+    print(mode, country)
+    img = AI(mode, country)
     my_stringIObytes = BytesIO()
     img.savefig(my_stringIObytes, format='png')
     my_stringIObytes.seek(0)
